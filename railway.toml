@@ -1,6 +1,5 @@
 [build]
 builder = "nixpacks"
-rootDirectory = "econpulse"
 
 [deploy]
 startCommand = "npm run start"
