@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 뉴스 기사
+model News {
+  id            String    @id @default(cuid())
+  title         String
+  titleKr       String?   
+  summary       String?   
+  summaryKr     String?   
+  aiSummary     String?   
+  keywords      String[]  
+  content       String?   
+  url           String    @unique
+  imageUrl      String?
+  source        String    
+  category      String    
+  lang          String    @default("ko")
+  publishedAt   DateTime
+  collectedAt   DateTime  @default(now())
+  
+  bookmarks     Bookmark[]
+  alerts        Alert[]
+  trendData     TrendKeyword[]
+  
+  @@index([source])
+  @@index([category])
+  @@index([publishedAt])
+  @@index([keywords])
+}
+
+// 북마크
+model Bookmark {
+  id        String @id @default(cuid())
+  userId    String @default("default")
+  newsId    String
+  createdAt DateTime @default(now())
+  
+  news      News   @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, newsId])
+}
+
+// 알림 설정
+model Alert {
+  id        String   @id @default(cuid())
+  userId    String   @default("default")
+  type      String   
+  value     String   
+  method    String   
+  active    Boolean  @default(true)
+  lastSent  DateTime?
+  createdAt DateTime @default(now())
+  
+  newsId    String?
+  news      News?    @relation(fields: [newsId], references: [id], onDelete: Cascade)
+}
+
+// 키워드 트렌드
+model TrendKeyword {
+  id        String   @id @default(cuid())
+  keyword   String
+  count     Int      
+  hour      DateTime 
+  
+  newsId    String?
+  news      News?    @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  
+  @@unique([keyword, hour, newsId])
+  @@index([keyword, hour])
+}
+
+// 수집 로그
+model CollectLog {
+  id          String   @id @default(cuid())
+  source      String
+  count       Int      
+  newCount    Int      
+  success     Boolean
+  errorMessage String?
+  duration    Int      
+  createdAt   DateTime @default(now())
+}
+
+// RSS 출력 구독자
+model RSSSubscriber {
+  id        String   @id @default(cuid())
+  feedUrl   String   
+  config    Json     
+  createdAt DateTime @default(now())
+}
