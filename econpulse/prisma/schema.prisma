@@ -28,6 +28,7 @@ model News {
   bookmarks     Bookmark[]
   alerts        Alert[]
   trendData     TrendKeyword[]
+  userHistory   UserNewsHistory[]
   
   @@index([source])
   @@index([category])
@@ -94,4 +95,33 @@ model RSSSubscriber {
   feedUrl   String   
   config    Json     
   createdAt DateTime @default(now())
+}
+
+// 사용자 개인화 설정
+model UserPreference {
+  id                String   @id @default(cuid())
+  userId            String   @default("default")
+  interestedSources String[] // 관심 매체
+  interestedCategories String[] // 관심 카테고리
+  interestedKeywords String[] // 관심 키워드
+  excludedSources   String[] // 제외 매체
+  excludedKeywords  String[] // 제외 키워드
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+  
+  @@unique([userId])
+}
+
+// 사용자 뉴스 기록
+model UserNewsHistory {
+  id        String   @id @default(cuid())
+  userId    String   @default("default")
+  newsId    String
+  action    String   // view, bookmark, share
+  createdAt DateTime @default(now())
+  
+  news      News     @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, newsId])
+  @@index([userId, createdAt])
 }
