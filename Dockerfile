@@ -3,7 +3,10 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts
+
+COPY prisma ./prisma
+RUN npx prisma generate
 
 COPY . .
 RUN npm run build
